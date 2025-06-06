@@ -42,11 +42,6 @@
             letter-spacing: -0.02em;
         }
         
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-        
         .calculator-body {
             padding: 40px;
         }
@@ -216,6 +211,11 @@
                 </div>
                 
                 <div class="input-group">
+                    <label for="brandingCost">Branding per Coconut ($)</label>
+                    <input type="number" id="brandingCost" value="0.00" step="0.01" min="0">
+                </div>
+                
+                <div class="input-group">
                     <label for="numEmployees">Number of Employees</label>
                     <input type="number" id="numEmployees" value="1" min="1">
                 </div>
@@ -265,6 +265,11 @@
                 </div>
                 
                 <div class="result-item">
+                    <span class="result-label">Branding</span>
+                    <span class="result-value" id="brandingTotal">$0.00</span>
+                </div>
+                
+                <div class="result-item">
                     <span class="result-label">
                         Labor
                         <div class="detail-text"><span id="employeeCount">1</span> employee × <span id="hoursDisplay">9</span> hrs</div>
@@ -299,6 +304,7 @@
             const garnishCost = parseFloat(document.getElementById('garnishCost').value) || 0;
             const strawSpoonCost = parseFloat(document.getElementById('strawSpoonCost').value) || 0;
             const iceCost = parseFloat(document.getElementById('iceCost').value) || 0;
+            const brandingCost = parseFloat(document.getElementById('brandingCost').value) || 0;
             const numEmployees = parseFloat(document.getElementById('numEmployees').value) || 1;
             const laborHours = parseFloat(document.getElementById('laborHours').value) || 0;
             const laborRate = parseFloat(document.getElementById('laborRate').value) || 0;
@@ -309,16 +315,18 @@
             const garnishTotal = coconuts * garnishCost;
             const strawSpoonTotal = coconuts * strawSpoonCost;
             const iceTotal = coconuts * iceCost;
+            const brandingTotal = coconuts * brandingCost;
             const laborTotal = numEmployees * laborHours * laborRate;
             const gasTotal = milesDriven * costPerMile;
             
-            const totalCost = coconutTotal + garnishTotal + strawSpoonTotal + iceTotal + laborTotal + gasTotal;
+            const totalCost = coconutTotal + garnishTotal + strawSpoonTotal + iceTotal + brandingTotal + laborTotal + gasTotal;
             const costPerCoconut = coconuts > 0 ? totalCost / coconuts : 0;
             
             document.getElementById('coconutTotal').textContent = '$' + coconutTotal.toFixed(2);
             document.getElementById('garnishTotal').textContent = '$' + garnishTotal.toFixed(2);
             document.getElementById('strawSpoonTotal').textContent = '$' + strawSpoonTotal.toFixed(2);
             document.getElementById('iceTotal').textContent = '$' + iceTotal.toFixed(2);
+            document.getElementById('brandingTotal').textContent = '$' + brandingTotal.toFixed(2);
             document.getElementById('laborTotal').textContent = '$' + laborTotal.toFixed(2);
             document.getElementById('gasTotal').textContent = '$' + gasTotal.toFixed(2);
             document.getElementById('totalCost').textContent = '$' + totalCost.toFixed(2);
