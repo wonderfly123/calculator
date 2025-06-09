@@ -341,8 +341,16 @@
                 
                 <div class="slider-group">
                     <div class="slider-container">
+                        <label class="slider-label">Waste Factor</label>
+                        <input type="range" id="wasteFactor" class="slider" min="0" max="20" value="7" step="0.5">
+                        <div class="slider-value"><span id="wasteFactorValue">7</span>%</div>
+                    </div>
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-container">
                         <label class="slider-label">Profit Margin</label>
-                        <input type="range" id="profitMargin" class="slider" min="0" max="100" value="30" step="1">
+                        <input type="range" id="profitMargin" class="slider" min="0" max="80" value="30" step="1">
                         <div class="slider-value"><span id="profitMarginValue">30</span>%</div>
                     </div>
                 </div>
@@ -383,6 +391,14 @@
                 
                 <div class="result-item">
                     <span class="result-label">
+                        Waste Cost
+                        <div class="detail-text"><span id="wasteFactorDisplay">7</span>% of base costs</div>
+                    </span>
+                    <span class="result-value" id="wasteTotal">$50.05</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">
                         Labor
                         <div class="detail-text"><span id="employeeCount">1</span> employee × <span id="hoursDisplay">9</span> hrs</div>
                     </span>
@@ -398,21 +414,21 @@
                 </div>
                 
                 <div class="total-section">
-                    <div class="total-cost" id="totalCost">$715.00</div>
+                    <div class="total-cost" id="totalCost">$765.05</div>
                     <div>Total Event Cost</div>
                 </div>
                 
                 <div class="profit-section">
-                    <div class="profit-cost" id="totalWithProfit">$929.50</div>
+                    <div class="profit-cost" id="totalWithProfit">$1,093.64</div>
                     <div>Total with <span id="profitMarginDisplay">30</span>% Profit</div>
                 </div>
                 
                 <div class="pricing-grid">
                     <div class="cost-per-coconut">
-                        Cost per Coconut: <span id="costPerCoconut">$3.58</span>
+                        Cost per Coconut: <span id="costPerCoconut">$3.83</span>
                     </div>
                     <div class="price-per-coconut">
-                        Price per Coconut: <span id="pricePerCoconut">$4.65</span>
+                        Price per Coconut: <span id="pricePerCoconut">$5.47</span>
                     </div>
                 </div>
             </div>
@@ -421,6 +437,9 @@
 
     <script>
         function calculateCosts() {
+            console.log('Calculating costs...'); // Debug line
+            
+            // Get all input values
             const coconuts = parseFloat(document.getElementById('coconuts').value) || 0;
             const coconutCost = parseFloat(document.getElementById('coconutCost').value) || 0;
             const garnishCost = parseFloat(document.getElementById('garnishCost').value) || 0;
@@ -433,8 +452,10 @@
             const laborRate = parseFloat(document.getElementById('laborRate').value) || 0;
             const milesDriven = parseFloat(document.getElementById('milesDriven').value) || 0;
             const costPerMile = parseFloat(document.getElementById('costPerMile').value) || 0;
+            const wasteFactor = parseFloat(document.getElementById('wasteFactor').value) || 0;
             const profitMargin = parseFloat(document.getElementById('profitMargin').value) || 0;
             
+            // Calculate individual costs
             const coconutTotal = coconuts * coconutCost;
             const garnishTotal = coconuts * garnishCost;
             const strawSpoonTotal = coconuts * strawSpoonCost;
@@ -444,17 +465,30 @@
             const laborTotal = numEmployees * laborHours * laborRate;
             const gasTotal = milesDriven * costPerMile;
             
-            const totalCost = coconutTotal + garnishTotal + strawSpoonTotal + iceTotal + brandingTotal + stampTotal + laborTotal + gasTotal;
-            const totalWithProfit = totalCost * (1 + profitMargin / 100);
+            // Calculate base cost (before waste)
+            const baseCost = coconutTotal + garnishTotal + strawSpoonTotal + iceTotal + brandingTotal + stampTotal + laborTotal + gasTotal;
+            
+            // Calculate waste cost
+            const wasteTotal = baseCost * (wasteFactor / 100);
+            
+            // Calculate total cost (including waste)
+            const totalCost = baseCost + wasteTotal;
+            
+            // Calculate total with profit margin
+            const totalWithProfit = profitMargin > 0 ? totalCost / (1 - profitMargin / 100) : totalCost;
+            
+            // Calculate per coconut costs
             const costPerCoconut = coconuts > 0 ? totalCost / coconuts : 0;
             const pricePerCoconut = coconuts > 0 ? totalWithProfit / coconuts : 0;
             
+            // Update display values
             document.getElementById('coconutTotal').textContent = '$' + coconutTotal.toFixed(2);
             document.getElementById('garnishTotal').textContent = '$' + garnishTotal.toFixed(2);
             document.getElementById('strawSpoonTotal').textContent = '$' + strawSpoonTotal.toFixed(2);
             document.getElementById('iceTotal').textContent = '$' + iceTotal.toFixed(2);
             document.getElementById('brandingTotal').textContent = '$' + brandingTotal.toFixed(2);
             document.getElementById('stampTotal').textContent = '$' + stampTotal.toFixed(2);
+            document.getElementById('wasteTotal').textContent = '$' + wasteTotal.toFixed(2);
             document.getElementById('laborTotal').textContent = '$' + laborTotal.toFixed(2);
             document.getElementById('gasTotal').textContent = '$' + gasTotal.toFixed(2);
             document.getElementById('totalCost').textContent = '$' + totalCost.toFixed(2);
@@ -466,17 +500,34 @@
             document.getElementById('employeeCount').textContent = numEmployees;
             document.getElementById('hoursDisplay').textContent = laborHours;
             document.getElementById('milesDisplay').textContent = milesDriven;
+            document.getElementById('wasteFactorValue').textContent = wasteFactor;
+            document.getElementById('wasteFactorDisplay').textContent = wasteFactor;
             document.getElementById('profitMarginValue').textContent = profitMargin;
             document.getElementById('profitMarginDisplay').textContent = profitMargin;
         }
         
-        // Add event listeners to all inputs
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('input', calculateCosts);
+        // Wait for page to load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to all number inputs
+            const inputs = document.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => {
+                input.addEventListener('input', calculateCosts);
+                input.addEventListener('change', calculateCosts);
+            });
+            
+            // Add specific listeners for sliders
+            const wasteSlider = document.getElementById('wasteFactor');
+            const profitSlider = document.getElementById('profitMargin');
+            
+            wasteSlider.addEventListener('input', calculateCosts);
+            wasteSlider.addEventListener('change', calculateCosts);
+            
+            profitSlider.addEventListener('input', calculateCosts);
+            profitSlider.addEventListener('change', calculateCosts);
+            
+            // Calculate initial values
+            calculateCosts();
         });
-        
-        // Calculate initial values
-        calculateCosts();
     </script>
 </body>
 </html>
